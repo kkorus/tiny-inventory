@@ -1,0 +1,48 @@
+---
+description: Conventions for the Tiny Inventory monorepo (NestJS API + React web)
+globs: "**/*.{ts,tsx,js,jsx,json,md,yml,yaml}"
+alwaysApply: true
+---
+
+# Project context
+
+- Monorepo layout: `server/` (NestJS, TypeScript, TypeORM, PostgreSQL, Swagger) and `web/` (React, TypeScript, Vite).
+- All **code, identifiers, file names, and code comments** must be in **English**.
+- Do not use `any` in TypeScript. Prefer explicit types and `readonly` where appropriate.
+- Prefer simple, pragmatic solutions over over-engineering.
+- **No authentication** in scope unless explicitly requested.
+- Avoid unrelated refactors, drive-by renames, or new docs unless explicitly asked.
+
+---
+
+# Backend (NestJS)
+
+## Architecture
+
+- Keep business rules out of controllers.
+- Use DTOs with `class-validator` for input validation.
+- Place domain logic in services (or use-case layer if needed).
+- Prefer simple service-layer architecture over full DDD unless clearly justified.
+
+## API Design
+
+- Expose a consistent REST API under `/api` prefix (e.g. `GET /api/health`).
+- Document all endpoints with Swagger (`/api/docs`).
+
+### Pagination
+
+- Use query params:
+  - `page` (default: 1)
+  - `limit` (default: 10–20)
+
+- Response shape:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "total": number,
+    "page": number,
+    "limit": number
+  }
+}
