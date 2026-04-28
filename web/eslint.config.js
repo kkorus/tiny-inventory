@@ -19,6 +19,35 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        {
+          accessibility: 'explicit',
+        },
+      ],
+      '@typescript-eslint/member-ordering': [
+        'error',
+        {
+          default: [
+            'signature',
+            'public-static-field',
+            'protected-static-field',
+            'private-static-field',
+            'public-instance-field',
+            'protected-instance-field',
+            'private-instance-field',
+            'public-constructor',
+            'protected-constructor',
+            'private-constructor',
+            'public-static-method',
+            'protected-static-method',
+            'private-static-method',
+            'public-instance-method',
+            'protected-instance-method',
+            'private-instance-method',
+          ],
+        },
+      ],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

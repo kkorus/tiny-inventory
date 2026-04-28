@@ -31,6 +31,27 @@
 $ npm install
 ```
 
+## Database migrations and seed
+
+```bash
+# create empty migration file
+$ npm run db:migration:create --name=AddInventoryIndexes
+
+# generate migration from entity changes
+$ npm run db:migration:generate --name=SyncSchemaChanges
+
+# run/revert migrations
+$ npm run db:migration:run
+$ npm run db:migration:revert
+
+# optional aliases
+$ npm run db:migrate
+$ npm run db:revert
+
+# seed initial data
+$ npm run db:seed
+```
+
 ## Compile and run the project
 
 ```bash

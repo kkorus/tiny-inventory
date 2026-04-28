@@ -23,13 +23,27 @@ Then:
 | API Swagger | <http://localhost:3000/api/docs> |
 | Health      | <http://localhost:3000/api/health> |
 
-## Local development (without building web in Docker)
+## Local development (workspace monorepo)
 
-1. Start only Postgres: `docker compose up -d db`
-2. `cp server/.env.example server/.env` and adjust if needed
-3. API: `cd server && npm install && npm run start:dev`
-4. Web: `cd web && npm install && cp .env.example .env && npm run dev`  
-   Leave `VITE_API_URL` empty in `web/.env` so the Vite dev server proxies `/api` to the API on port 3000.
+1. Install all dependencies once from repo root: `npm install`
+2. Start only Postgres: `docker compose up -d db`
+3. `cp server/.env.example server/.env` and adjust if needed
+4. Optional: `cp web/.env.example web/.env` (leave `VITE_API_URL` empty to use Vite `/api` proxy)
+5. Run API: `npm run dev:server`
+6. Run Web: `npm run dev:web`
+7. Or run both in parallel: `npm run dev`
+
+## Workspace scripts (repo root)
+
+- `npm run build` - build all workspaces that expose `build`
+- `npm run dev` - run server and web dev servers in parallel
+- `npm run lint` - run lint in all workspaces
+- `npm run lint:fix` - run lint with autofix in all workspaces
+- `npm run test` - run test scripts in all workspaces
+- `npm run test:e2e` - run server e2e tests
+- `npm run db:migrate` - run server migrations
+- `npm run db:revert` - revert latest server migration
+- `npm run db:seed` - seed server database
 
 ## API sketch (max ~10 lines)
 

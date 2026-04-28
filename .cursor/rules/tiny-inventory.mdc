@@ -9,6 +9,7 @@ alwaysApply: true
 - Monorepo layout: `server/` (NestJS, TypeScript, TypeORM, PostgreSQL, Swagger) and `web/` (React, TypeScript, Vite).
 - All **code, identifiers, file names, and code comments** must be in **English**.
 - Do not use `any` in TypeScript. Prefer explicit types and `readonly` where appropriate.
+- Always use explicit access modifiers for class properties (for example: `public storeId?: string`).
 - Prefer simple, pragmatic solutions over over-engineering.
 - **No authentication** in scope unless explicitly requested.
 - Avoid unrelated refactors, drive-by renames, or new docs unless explicitly asked.

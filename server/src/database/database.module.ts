@@ -2,10 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-/**
- * Central database wiring. Entity modules will be added in the next stage.
- * synchronize is dev-only; migrations will be introduced with real entities.
- */
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -18,8 +14,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: config.get<string>('DATABASE_USER', 'tiny'),
         password: config.get<string>('DATABASE_PASSWORD', 'tiny'),
         database: config.get<string>('DATABASE_NAME', 'tiny_inventory'),
-        autoLoadEntities: true,
-        synchronize: true,
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+        migrationsRun:
+          config.get<string>('DATABASE_MIGRATIONS_RUN', 'false') === 'true',
+        synchronize:
+          config.get<string>('DATABASE_SYNCHRONIZE', 'false') === 'true',
         logging: config.get<string>('NODE_ENV') !== 'production',
       }),
     }),

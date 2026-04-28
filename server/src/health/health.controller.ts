@@ -8,10 +8,10 @@ import {
 
 export class HealthResponseDto {
   @ApiProperty({ example: 'ok' })
-  status: string;
+  public status: string;
 
   @ApiProperty({ example: 'tiny-inventory-api' })
-  service: string;
+  public service: string;
 }
 
 @Controller('health')
@@ -22,7 +22,7 @@ export class HealthController {
     summary: 'Liveness/health check for load balancers and Docker',
   })
   @ApiOkResponse({ type: HealthResponseDto })
-  getHealth(): HealthResponseDto {
+  public getHealth(): HealthResponseDto {
     return { status: 'ok', service: 'tiny-inventory-api' };
   }
 }
