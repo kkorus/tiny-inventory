@@ -21,7 +21,9 @@ async function bootstrap(): Promise<void> {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Tiny Inventory API')
-    .setDescription('REST API for stores and products (assignment bootstrap).')
+    .setDescription(
+      'REST API for stores, catalog products, categories, per-store inventory lines, and low-stock insights. OpenAPI matches implemented routes.',
+    )
     .setVersion('1.0')
     .addServer('/')
     .build();

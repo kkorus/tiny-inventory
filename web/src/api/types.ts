@@ -130,8 +130,14 @@ export type LowStockInsightsResponse = Readonly<{
   summary: LowStockSummary;
 }>;
 
+export type FieldValidationErrorItem = Readonly<{
+  field: string;
+  messages: readonly string[];
+}>;
+
 export type ApiError = Readonly<{
   status: number;
   message: string;
   details?: readonly string[];
+  fieldErrors?: readonly FieldValidationErrorItem[];
 }>;
