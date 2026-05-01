@@ -276,6 +276,7 @@ export function StoreProductsPage(): JSX.Element {
             <PaginationControls
               meta={linesQuery.data.meta}
               onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
+              onLimitChange={(limit) => setFilters((f) => ({ ...f, limit, page: 1 }))}
             />
           )}
         </div>

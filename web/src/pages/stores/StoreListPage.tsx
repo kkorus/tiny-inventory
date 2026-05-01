@@ -8,16 +8,15 @@ import { PaginationControls } from '../../components/ui/PaginationControls';
 import { queryKeys } from '../../query/query-keys';
 import type { JSX } from 'react';
 
-const PAGE_LIMIT = 20;
-
 export function StoreListPage(): JSX.Element {
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [actionError, setActionError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const storesQuery = useQuery({
-    queryKey: queryKeys.stores(page, PAGE_LIMIT),
-    queryFn: () => fetchStores(page, PAGE_LIMIT),
+    queryKey: queryKeys.stores(page, limit),
+    queryFn: () => fetchStores(page, limit),
   });
 
   const deleteMutation = useMutation({
@@ -95,7 +94,11 @@ export function StoreListPage(): JSX.Element {
             </tbody>
           </table>
           {storesQuery.data && (
-            <PaginationControls meta={storesQuery.data.meta} onPageChange={setPage} />
+            <PaginationControls
+              meta={storesQuery.data.meta}
+              onPageChange={setPage}
+              onLimitChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
+            />
           )}
         </div>
       </AsyncState>

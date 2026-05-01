@@ -7,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
-import { isUniqueViolation } from '../common/utils/is-unique-violation.util';
+import {
+  isForeignKeyViolation,
+  isUniqueViolation,
+} from '../common/utils/is-unique-violation.util';
 import { PRODUCT_CATALOG_REPOSITORY } from './application/ports/product-catalog.repository';
 import { PRODUCT_REPOSITORY } from './application/ports/product.repository';
 import { ProductView } from './application/read-models/product-view.read-model';
@@ -120,9 +123,18 @@ export class ProductsService {
   }
 
   public async remove(id: string): Promise<void> {
-    const isDeleted = await this.productsRepository.deleteById(id);
-    if (!isDeleted) {
-      throw new NotFoundException(`Product with id "${id}" was not found.`);
+    try {
+      const isDeleted = await this.productsRepository.deleteById(id);
+      if (!isDeleted) {
+        throw new NotFoundException(`Product with id "${id}" was not found.`);
+      }
+    } catch (error) {
+      if (isForeignKeyViolation(error as { code?: string })) {
+        throw new ConflictException(
+          'Product has inventory lines and cannot be deleted.',
+        );
+      }
+      throw error;
     }
   }
 

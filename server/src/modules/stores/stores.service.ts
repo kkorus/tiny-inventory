@@ -7,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
-import { isUniqueViolation } from '../common/utils/is-unique-violation.util';
+import {
+  isForeignKeyViolation,
+  isUniqueViolation,
+} from '../common/utils/is-unique-violation.util';
 import { STORE_REPOSITORY } from './application/ports/store.repository';
 import { StoreView } from './application/read-models/store-view.read-model';
 import type { StoreRepository } from './application/ports/store.repository';
@@ -105,9 +108,18 @@ export class StoresService {
   }
 
   public async remove(id: string): Promise<void> {
-    const isDeleted = await this.storesRepository.deleteById(id);
-    if (!isDeleted) {
-      throw new NotFoundException(`Store with id "${id}" was not found.`);
+    try {
+      const isDeleted = await this.storesRepository.deleteById(id);
+      if (!isDeleted) {
+        throw new NotFoundException(`Store with id "${id}" was not found.`);
+      }
+    } catch (error) {
+      if (isForeignKeyViolation(error as { code?: string })) {
+        throw new ConflictException(
+          'Store has inventory lines and cannot be deleted.',
+        );
+      }
+      throw error;
     }
   }
 

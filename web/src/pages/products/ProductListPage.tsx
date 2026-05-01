@@ -8,16 +8,15 @@ import { AsyncState } from '../../components/ui/AsyncState';
 import { PaginationControls } from '../../components/ui/PaginationControls';
 import { queryKeys } from '../../query/query-keys';
 
-const PAGE_LIMIT = 20;
-
 export function ProductListPage(): JSX.Element {
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
 
   const productsQuery = useQuery({
-    queryKey: queryKeys.products(page, PAGE_LIMIT),
-    queryFn: () => fetchProducts(page, PAGE_LIMIT),
+    queryKey: queryKeys.products(page, limit),
+    queryFn: () => fetchProducts(page, limit),
   });
 
   const deleteMutation = useMutation({
@@ -98,7 +97,11 @@ export function ProductListPage(): JSX.Element {
             </tbody>
           </table>
           {productsQuery.data && (
-            <PaginationControls meta={productsQuery.data.meta} onPageChange={setPage} />
+            <PaginationControls
+                meta={productsQuery.data.meta}
+                onPageChange={setPage}
+                onLimitChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
+              />
           )}
         </div>
       </AsyncState>
