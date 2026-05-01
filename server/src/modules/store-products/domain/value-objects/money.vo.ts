@@ -1,4 +1,4 @@
-import { DomainValidationError } from '../errors/domain-validation.error';
+import { DomainValidationError } from '../../../common/domain/errors/domain-validation.error';
 
 const MONEY_REGEX = /^(?:\d{1,10})(?:\.\d{1,2})?$/;
 

@@ -1,4 +1,4 @@
-import { DomainValidationError } from '../errors/domain-validation.error';
+import { DomainValidationError } from '../../../common/domain/errors/domain-validation.error';
 
 const MAX_LOW_STOCK_THRESHOLD = 1_000_000;
 

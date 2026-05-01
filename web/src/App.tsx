@@ -1,54 +1,24 @@
-import { useEffect, useState } from 'react';
-import './App.css';
+import { Outlet, NavLink, Link } from 'react-router-dom';
+import type { JSX } from 'react';
 
-function buildHealthUrl(): string {
-  const raw = import.meta.env.VITE_API_URL;
-  const base =
-    typeof raw === 'string' && raw.length > 0 ? raw.replace(/\/$/, '') : '';
-  return base ? `${base}/api/health` : '/api/health';
-}
-
-function App() {
-  const [health, setHealth] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const url = buildHealthUrl();
-    setLoading(true);
-    setError(null);
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-        return res.json() as Promise<{ status: string; service: string }>;
-      })
-      .then((data) => {
-        setHealth(JSON.stringify(data, null, 2));
-      })
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
+function App(): JSX.Element {
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Tiny Inventory</h1>
-        <p className="muted">Stage 1 bootstrap: API health check</p>
+    <div className="app-shell">
+      <header className="header">
+        <Link to="/" className="header-brand">
+          <span className="brand-icon">📦</span>
+          Tiny Inventory
+        </Link>
+        <nav className="nav">
+          <NavLink to="/products">Products</NavLink>
+          <NavLink to="/categories">Categories</NavLink>
+          <NavLink to="/stores">Stores</NavLink>
+          <NavLink to="/store-products">Store Products</NavLink>
+          <NavLink to="/reports">Reports</NavLink>
+        </nav>
       </header>
-      <main className="panel">
-        {loading && <p>Loading API status&hellip;</p>}
-        {!loading && error && (
-          <p className="error" role="alert">
-            Could not reach the API: {error}
-          </p>
-        )}
-        {!loading && !error && health && (
-          <pre className="health-block">{health}</pre>
-        )}
+      <main className="content">
+        <Outlet />
       </main>
     </div>
   );

@@ -12,7 +12,7 @@ import { STORE_PRODUCT_REPOSITORY } from './application/ports/store-product.repo
 import { StoreProductView } from './application/read-models/store-product-view.read-model';
 import type { InventoryCatalogRepository } from './application/ports/inventory-catalog.repository';
 import type { StoreProductRepository } from './application/ports/store-product.repository';
-import { DomainValidationError } from './domain/errors/domain-validation.error';
+import { DomainValidationError } from '../common/domain/errors/domain-validation.error';
 import { StoreProduct } from './domain/store-product.aggregate';
 import { LowStockThreshold } from './domain/value-objects/low-stock-threshold.vo';
 import { Money } from './domain/value-objects/money.vo';

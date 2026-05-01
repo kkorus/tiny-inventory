@@ -17,13 +17,14 @@ export class ProductMapper {
 
   public static toPersistence(
     product: Product,
-  ): Pick<ProductEntity, 'id' | 'categoryId' | 'name' | 'sku'> {
+  ): Pick<ProductEntity, 'id' | 'categoryId' | 'name' | 'sku' | 'updatedAt'> {
     const snapshot = product.toSnapshot();
     return {
       id: snapshot.id,
       categoryId: snapshot.categoryId,
       name: snapshot.name,
       sku: snapshot.sku,
+      updatedAt: snapshot.updatedAt,
     };
   }
 }

@@ -13,7 +13,7 @@ import { PRODUCT_REPOSITORY } from './application/ports/product.repository';
 import { ProductView } from './application/read-models/product-view.read-model';
 import type { ProductCatalogRepository } from './application/ports/product-catalog.repository';
 import type { ProductRepository } from './application/ports/product.repository';
-import { DomainValidationError } from './domain/errors/domain-validation.error';
+import { DomainValidationError } from '../common/domain/errors/domain-validation.error';
 import { Product } from './domain/product.aggregate';
 import { ProductName } from './domain/value-objects/product-name.vo';
 import { Sku } from './domain/value-objects/sku.vo';

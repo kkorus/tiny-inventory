@@ -16,12 +16,13 @@ export class StoreMapper {
 
   public static toPersistence(
     store: Store,
-  ): Pick<StoreEntity, 'id' | 'name' | 'address'> {
+  ): Pick<StoreEntity, 'id' | 'name' | 'address' | 'updatedAt'> {
     const snapshot = store.toSnapshot();
     return {
       id: snapshot.id,
       name: snapshot.name,
       address: snapshot.address,
+      updatedAt: snapshot.updatedAt,
     };
   }
 }

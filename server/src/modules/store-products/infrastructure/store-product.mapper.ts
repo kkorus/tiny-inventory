@@ -22,7 +22,13 @@ export class StoreProductMapper {
     storeProduct: StoreProduct,
   ): Pick<
     StoreProductEntity,
-    'id' | 'storeId' | 'productId' | 'price' | 'quantity' | 'lowStockThreshold'
+    | 'id'
+    | 'storeId'
+    | 'productId'
+    | 'price'
+    | 'quantity'
+    | 'lowStockThreshold'
+    | 'updatedAt'
   > {
     const snapshot = storeProduct.toSnapshot();
     return {
@@ -32,6 +38,7 @@ export class StoreProductMapper {
       price: snapshot.price,
       quantity: snapshot.quantity,
       lowStockThreshold: snapshot.lowStockThreshold,
+      updatedAt: snapshot.updatedAt,
     };
   }
 }

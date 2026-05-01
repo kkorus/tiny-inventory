@@ -27,7 +27,7 @@ services:
       DATABASE_USER: tiny
       DATABASE_PASSWORD: tiny
       DATABASE_NAME: tiny_inventory
-      CORS_ORIGIN: http://localhost:3001,http://127.0.0.1:3001
+      CORS_ORIGIN: http://localhost:3001,http://127.0.0.1:3001,http://localhost:5173,http://127.0.0.1:5173
     ports:
       - '3000:3000'
     depends_on:
@@ -44,6 +44,13 @@ services:
       - '3001:80'
     depends_on:
       - server
+    develop:
+      watch:
+        - path: ./web
+          action: rebuild
+          ignore:
+            - node_modules/
+            - dist/
 
 volumes:
   pgdata:

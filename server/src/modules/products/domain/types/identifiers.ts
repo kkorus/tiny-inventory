@@ -1,5 +1,5 @@
-import { DomainValidationError } from '../errors/domain-validation.error';
-import { Brand } from './brand.type';
+import { DomainValidationError } from '../../../common/domain/errors/domain-validation.error';
+import { Brand } from '../../../common/domain/types/brand.type';
 
 export type ProductId = Brand<string, 'ProductId'>;
 export type CategoryId = Brand<string, 'CategoryId'>;

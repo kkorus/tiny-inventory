@@ -23,6 +23,11 @@ Then:
 | API Swagger | <http://localhost:3000/api/docs> |
 | Health      | <http://localhost:3000/api/health> |
 
+### Live reload while using Docker
+
+- **Rebuild static web on save:** `docker compose watch` (or `npm run docker:watch`). Edits under `web/` trigger a rebuild of the `web` service; keep the terminal open.
+- **Vite HMR (faster):** `npm run docker:dev` — Compose file `docker-compose.dev.yml` adds a `vite` dev server on <http://localhost:5173> and turns off the nginx `web` container (`--scale web=0`). API remains on port 3000.
+
 ## Local development (workspace monorepo)
 
 1. Install all dependencies once from repo root: `npm install`
@@ -44,6 +49,8 @@ Then:
 - `npm run db:migrate` - run server migrations
 - `npm run db:revert` - revert latest server migration
 - `npm run db:seed` - seed server database
+- `npm run docker:watch` - `docker compose watch` (rebuild `web` image when files under `web/` change)
+- `npm run docker:dev` - DB + API + Vite dev server on port 5173 (nginx `web` scaled to 0)
 
 ## API sketch (max ~10 lines)
 
@@ -60,3 +67,4 @@ Fleshed out in a later pass when the assignment feature set is complete. See `AG
 - `server/` - NestJS application
 - `web/` - Vite + React + TypeScript
 - `docker-compose.yml` - `db`, `server`, `web` services
+- `docker-compose.dev.yml` - optional `vite` overlay for HMR with Docker (see “Live reload while using Docker”)

@@ -11,7 +11,7 @@ import { isUniqueViolation } from '../common/utils/is-unique-violation.util';
 import { STORE_REPOSITORY } from './application/ports/store.repository';
 import { StoreView } from './application/read-models/store-view.read-model';
 import type { StoreRepository } from './application/ports/store.repository';
-import { DomainValidationError } from './domain/errors/domain-validation.error';
+import { DomainValidationError } from '../common/domain/errors/domain-validation.error';
 import { Store } from './domain/store.aggregate';
 import { StoreAddress } from './domain/value-objects/store-address.vo';
 import { StoreName } from './domain/value-objects/store-name.vo';
@@ -40,7 +40,7 @@ export class StoresService {
         updatedAt: now,
       });
       await this.storesRepository.insert(store);
-      return this.findOne(store.toSnapshot().id);
+      return store.toSnapshot();
     } catch (error) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
@@ -92,7 +92,7 @@ export class StoresService {
           : undefined,
       });
       await this.storesRepository.save(store);
-      return this.findOne(id);
+      return store.toSnapshot();
     } catch (error) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);

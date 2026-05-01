@@ -53,16 +53,24 @@ export class Product {
   }
 
   public update(props: ProductUpdateProps): void {
-    if (props.categoryId) {
+    let changed = false;
+
+    if (props.categoryId !== undefined) {
       this.categoryId = toCategoryId(props.categoryId);
+      changed = true;
     }
-    if (props.name) {
+    if (props.name !== undefined) {
       this.name = props.name;
+      changed = true;
     }
-    if (props.sku) {
+    if (props.sku !== undefined) {
       this.sku = props.sku;
+      changed = true;
     }
-    this.touch();
+
+    if (changed) {
+      this.touch();
+    }
   }
 
   public toSnapshot(): ProductSnapshot {

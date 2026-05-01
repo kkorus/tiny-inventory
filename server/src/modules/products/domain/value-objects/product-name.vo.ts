@@ -1,4 +1,4 @@
-import { DomainValidationError } from '../errors/domain-validation.error';
+import { DomainValidationError } from '../../../common/domain/errors/domain-validation.error';
 
 const PRODUCT_NAME_MAX_LENGTH = 180;
 

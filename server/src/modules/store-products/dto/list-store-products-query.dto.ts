@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
-export function toNumberOrUndefined(
+function toNumberOrUndefined(
   value: string | number | null | undefined,
 ): number | undefined {
   if (value === undefined || value === null || value === '') {
