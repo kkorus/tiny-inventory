@@ -45,7 +45,7 @@ Uses `server/.env` (or Compose defaults) for `DATABASE_*`.
 1. `npm install` from repo root  
 2. `docker compose up -d db`  
 3. `cp server/.env.example server/.env` — for local API, set `DATABASE_MIGRATIONS_RUN=true` **or** run `npm run db:migrate` once before first requests  
-4. Optional: `cp web/.env.example web/.env` — leave `VITE_API_URL` empty to use Vite’s `/api` proxy to the server  
+4. Optional: `cp web/.env.example web/.env` — leave `VITE_API_URL` empty to use Vite's `/api` proxy to the server  
 5. `npm run dev` (or `npm run dev:server` / `npm run dev:web`)
 
 ## Workspace scripts
@@ -54,58 +54,25 @@ Uses `server/.env` (or Compose defaults) for `DATABASE_*`.
 - `npm run dev` — API + Vite in parallel
 - `npm run lint` / `npm run lint:fix`
 - `npm run test` — unit tests (server + web)
-- `npm run test:e2e` — server e2e (needs Postgres; see **Testing**)
+- `npm run test:e2e` — server e2e (needs Postgres; see **Testing approach**)
 - `npm run db:migrate` / `npm run db:revert`
 - `npm run db:seed` — seed data
 
 ## API overview
 
-All routes are under the **`/api`** prefix. Authoritative contract: **Swagger UI** at `/api/docs`.
-
-### Resources (summary)
+All routes under `/api`; full contract at **Swagger** `/api/docs`. `id` params are UUIDs — invalid UUID → 400, missing resource → 404, DELETE → 204.  
+Paginated lists accept `page` / `limit` and return `{ data, meta: { total, page, limit, hasNext } }`.
 
 | Area | Base path | Notes |
 |------|-----------|--------|
-| Health | `GET /api/health` | Liveness-style payload |
-| Stores | `/api/stores` | CRUD; list uses `page`, `limit` |
-| Products | `/api/products` | Catalog CRUD; list paginated |
-| Categories | `/api/categories` | CRUD; list is all rows (no pagination) |
-| Store products | `/api/store-products` | Inventory lines; list with **filters** + pagination |
-| Insights | `GET /api/insights/low-stock` | Low-stock lines + summary aggregates |
+| Health | `GET /api/health` | Liveness check |
+| Stores | `/api/stores` | CRUD + paginated list |
+| Products | `/api/products` | Catalog CRUD + paginated list |
+| Categories | `/api/categories` | CRUD; full list (no pagination) |
+| Store products | `/api/store-products` | Inventory lines; list with filters (store, category, SKU, price range, quantity range) + pagination |
+| Insights | `GET /api/insights/low-stock` | Non-trivial: low-stock lines + aggregated summary by store and category |
 
-`id` path parameters are **UUIDs** (`ParseUUIDPipe`); invalid UUID → **400**.
-
-### Pagination (lists)
-
-Query: `page` (default **1**), `limit` (default **20**).
-
-Response shape:
-
-```json
-{
-  "data": [ … ],
-  "meta": {
-    "total": 0,
-    "page": 1,
-    "limit": 20,
-    "hasNext": false
-  }
-}
-```
-
-### Errors
-
-- **400** — validation: body includes `"message": "Validation failed"` and `"errors": [ { "field": "…", "messages": ["…"] }, … ]` (global `ValidationPipe`, whitelist, unknown fields rejected).  
-- **404** — missing entity (e.g. store/product not found); message describes the resource.  
-- **204** — successful DELETE with empty body.
-
-The web client maps `errors[]` into user-visible messages when present.
-
-### Architecture (server)
-
-Controllers stay thin; DTOs use `class-validator`. Domain rules live in services and aggregates; persistence goes through repository **ports** with TypeORM adapters. Keeps the codebase reviewable without full DDD ceremony.
-
-## Testing
+## Testing approach
 
 ### Unit tests
 
@@ -136,11 +103,12 @@ Boots the real `AppModule` with the same **`createValidationPipe()`** as product
   - `store_products` is the **many-to-many join table with a payload**. A plain pivot would only track which products exist in which stores; here each row also carries `price`, `quantity`, and `low_stock_threshold` — all values that are inherently per-store (the same headphone can sell for €199 in Warsaw and €179 in Gdańsk and have different stock levels). A composite `UNIQUE (store_id, product_id)` prevents a product from appearing twice in the same store. `ON DELETE RESTRICT` on both FKs means you cannot silently delete a store or a product that still has inventory lines.
   - Indexes on `store_products.store_id`, `.product_id`, and `.quantity` make the filtered list and low-stock queries efficient without full-table scans.
   - `price` is stored as `numeric(12,2)` in Postgres (exact decimal, no floating-point drift) and transferred as a numeric string in the API to avoid JavaScript `Number` precision loss on large values.
-- **No authentication or authorization** — out of scope; API is open on the assumed network. In production you would add authn/z, HTTPS, and tenant isolation.  
-- **Migrations on Docker API startup** — favors “clone and `docker compose up` works” over running migrate as a separate job; for large fleets, prefer init containers or release-phase migrate.  
-- **Postgres only** — single relational model; no multi-region or read replicas in this repo.  
-- **Observability** — structured logging, metrics, and tracing are not wired here; health is the only ops hook.  
+- **Why Postgres** — chosen for strong `UNIQUE`/`CHECK` constraints, `numeric` type (exact decimal for prices), and native UUID generation via `pgcrypto`. SQLite was an option but lacks true concurrent writes; in-memory storage survives nothing. Postgres is also the most common DB in the NestJS/TypeORM production ecosystem, making the project realistic. Trade-off: requires a running Postgres instance — mitigated by Docker Compose providing one out of the box.
+- **No authentication or authorization** — out of scope; API is open on the assumed network. In production you would add authn/z, HTTPS, and tenant isolation.
+- **Migrations on Docker API startup** — favors "clone and `docker compose up` works" over running migrate as a separate job; for large fleets, prefer init containers or release-phase migrate.
+- **Observability** — structured logging, metrics, and tracing are not wired here; health is the only ops hook.
 - **Rate limiting / API hardening** — not included; would sit behind a gateway or middleware in production.
+- **Pre-commit quality gate** — Husky + lint-staged block any commit that introduces ESLint errors or TypeScript type errors (`tsc --noEmit`). Only staged files are linted (fast); the TypeScript check runs project-wide to catch cross-file breakage.
 
 ## If I had more time
 
@@ -153,5 +121,4 @@ Boots the real `AppModule` with the same **`createValidationPipe()`** as product
 - `server/` — NestJS API, migrations under `server/src/migrations`  
 - `web/` — Vite + React  
 - `docker-compose.yml` — `db`, `server`, `web`  
-- `docker-compose.dev.yml` — optional Vite overlay for Docker-based HMR  
-- `AGENTS.md` — short stack and command reference for tooling
+- `docker-compose.dev.yml` — optional Vite overlay for Docker-based HMR
