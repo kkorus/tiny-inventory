@@ -1,0 +1,243 @@
+# Tiny Inventory — API demo requests
+# Use with VS Code REST Client or JetBrains HTTP Client.
+# Run requests top-to-bottom: create resources first, then use their IDs below.
+
+@base = http://localhost:3000/api
+
+# ─── Copy IDs from responses into these variables ────────────────────────────
+@categoryId  = PASTE_CATEGORY_UUID_HERE
+@productId   = PASTE_PRODUCT_UUID_HERE
+@storeId     = PASTE_STORE_UUID_HERE
+@spId        = PASTE_STORE_PRODUCT_UUID_HERE
+
+# =============================================================================
+# HEALTH
+# =============================================================================
+
+### Liveness check
+GET {{base}}/health
+
+# =============================================================================
+# CATEGORIES
+# =============================================================================
+
+### Create category
+POST {{base}}/categories
+Content-Type: application/json
+
+{
+  "name": "Electronics"
+}
+
+###
+
+### List all categories (no pagination)
+GET {{base}}/categories
+
+###
+
+### Get single category
+GET {{base}}/categories/{{categoryId}}
+
+###
+
+### Update category
+PATCH {{base}}/categories/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "Consumer Electronics"
+}
+
+# =============================================================================
+# PRODUCTS
+# =============================================================================
+
+### Create product
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "name": "Wireless Headphones XZ-200",
+  "sku": "XZ-200-BLK",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+
+### List products (paginated)
+GET {{base}}/products?page=1&limit=10
+
+###
+
+### Get single product
+GET {{base}}/products/{{productId}}
+
+###
+
+### Update product name
+PATCH {{base}}/products/{{productId}}
+Content-Type: application/json
+
+{
+  "name": "Wireless Headphones XZ-200 Pro"
+}
+
+# =============================================================================
+# STORES
+# =============================================================================
+
+### Create store
+POST {{base}}/stores
+Content-Type: application/json
+
+{
+  "name": "Downtown Branch",
+  "address": "123 Main St, Warsaw"
+}
+
+###
+
+### List stores (paginated)
+GET {{base}}/stores?page=1&limit=10
+
+###
+
+### Get single store
+GET {{base}}/stores/{{storeId}}
+
+###
+
+### Update store address
+PATCH {{base}}/stores/{{storeId}}
+Content-Type: application/json
+
+{
+  "address": "456 New Ave, Warsaw"
+}
+
+# =============================================================================
+# STORE PRODUCTS  (inventory lines)
+# =============================================================================
+
+### Add product to store inventory
+POST {{base}}/store-products
+Content-Type: application/json
+
+{
+  "storeId": "{{storeId}}",
+  "productId": "{{productId}}",
+  "price": "299.99",
+  "quantity": 5,
+  "lowStockThreshold": 10
+}
+
+###
+
+### List all inventory lines (paginated)
+GET {{base}}/store-products?page=1&limit=10
+
+###
+
+### Filter by store
+GET {{base}}/store-products?storeId={{storeId}}&page=1&limit=10
+
+###
+
+### Filter by store + category
+GET {{base}}/store-products?storeId={{storeId}}&categoryId={{categoryId}}&page=1&limit=10
+
+###
+
+### Filter by price range
+GET {{base}}/store-products?minPrice=100&maxPrice=500&page=1&limit=10
+
+###
+
+### Filter by low quantity
+GET {{base}}/store-products?maxQuantity=5&page=1&limit=10
+
+###
+
+### Filter by SKU
+GET {{base}}/store-products?sku=XZ-200-BLK&page=1&limit=10
+
+###
+
+### Get single inventory line
+GET {{base}}/store-products/{{spId}}
+
+###
+
+### Restock — update quantity and price
+PATCH {{base}}/store-products/{{spId}}
+Content-Type: application/json
+
+{
+  "quantity": 50,
+  "price": "279.99"
+}
+
+###
+
+### Lower the low-stock threshold
+PATCH {{base}}/store-products/{{spId}}
+Content-Type: application/json
+
+{
+  "lowStockThreshold": 5
+}
+
+# =============================================================================
+# INSIGHTS — low-stock report (non-trivial / computed)
+# =============================================================================
+
+### All low-stock lines across all stores (summary + detail)
+GET {{base}}/insights/low-stock
+
+###
+
+### Low-stock filtered to one store
+GET {{base}}/insights/low-stock?storeId={{storeId}}
+
+###
+
+### Low-stock filtered to one category
+GET {{base}}/insights/low-stock?categoryId={{categoryId}}
+
+# =============================================================================
+# ERROR / VALIDATION DEMOS
+# =============================================================================
+
+### 400 — missing required fields on store create
+POST {{base}}/stores
+Content-Type: application/json
+
+{}
+
+###
+
+### 400 — invalid SKU format (lowercase not allowed)
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "name": "Bad Product",
+  "sku": "invalid sku!",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+
+### 400 — invalid UUID path param
+GET {{base}}/stores/not-a-uuid
+
+###
+
+### 404 — store does not exist
+GET {{base}}/stores/00000000-0000-0000-0000-000000000000
+
+###
+
+### 204 — delete inventory line (no response body)
+DELETE {{base}}/store-products/{{spId}}

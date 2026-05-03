@@ -18,12 +18,25 @@
     "db:revert": "npm run db:revert -w server",
     "db:seed": "npm run db:seed -w server",
     "docker:watch": "docker compose watch",
-    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --scale web=0"
+    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --scale web=0",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
   },
   "engines": {
     "node": ">=22"
+  },
+  "lint-staged": {
+    "server/{src,test}/**/*.ts": [
+      "eslint --max-warnings=0 --no-warn-ignored",
+      "bash -c 'tsc --noEmit --project server/tsconfig.build.json'"
+    ],
+    "web/src/**/*.{ts,tsx}": [
+      "eslint --max-warnings=0 --no-warn-ignored",
+      "bash -c 'tsc --noEmit --project web/tsconfig.app.json'"
+    ]
   }
 }

@@ -130,11 +130,23 @@ Boots the real `AppModule` with the same **`createValidationPipe()`** as product
 
 ## Decisions and trade-offs
 
+- **Data model — four-table relational schema:**
+  - `categories` is a lookup/dictionary table rather than a plain string on the product. This gives referential integrity (a product cannot reference a non-existent category), lets every resource filter by `categoryId` consistently, and means a category rename propagates everywhere automatically. `ON DELETE RESTRICT` prevents dropping a category that still has products, avoiding orphans.
+  - `products` is a **global catalog** — it describes *what* a product is (name, SKU, category) independently of any store. SKU has a `UNIQUE` constraint enforced at the DB level so the same physical product is never registered twice under different IDs.
+  - `store_products` is the **many-to-many join table with a payload**. A plain pivot would only track which products exist in which stores; here each row also carries `price`, `quantity`, and `low_stock_threshold` — all values that are inherently per-store (the same headphone can sell for €199 in Warsaw and €179 in Gdańsk and have different stock levels). A composite `UNIQUE (store_id, product_id)` prevents a product from appearing twice in the same store. `ON DELETE RESTRICT` on both FKs means you cannot silently delete a store or a product that still has inventory lines.
+  - Indexes on `store_products.store_id`, `.product_id`, and `.quantity` make the filtered list and low-stock queries efficient without full-table scans.
+  - `price` is stored as `numeric(12,2)` in Postgres (exact decimal, no floating-point drift) and transferred as a numeric string in the API to avoid JavaScript `Number` precision loss on large values.
 - **No authentication or authorization** — out of scope; API is open on the assumed network. In production you would add authn/z, HTTPS, and tenant isolation.  
 - **Migrations on Docker API startup** — favors “clone and `docker compose up` works” over running migrate as a separate job; for large fleets, prefer init containers or release-phase migrate.  
 - **Postgres only** — single relational model; no multi-region or read replicas in this repo.  
 - **Observability** — structured logging, metrics, and tracing are not wired here; health is the only ops hook.  
 - **Rate limiting / API hardening** — not included; would sit behind a gateway or middleware in production.
+
+## If I had more time
+
+- **Authentication & multi-tenancy** — add JWT/OAuth2 with per-store RBAC so only authorized users can mutate inventory lines; currently the API is fully open.
+- **Observability stack** — wire Pino structured logging, OpenTelemetry traces, and a richer `/api/health` that probes the DB connection pool; right now ops visibility is minimal.
+- **Broader test coverage** — per-resource e2e suites (stores, products, store-products, insights), Playwright smoke tests for the React UI, and contract tests between the client and the API to catch breaking changes early.
 
 ## Repository layout
 
