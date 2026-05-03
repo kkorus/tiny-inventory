@@ -31,11 +31,11 @@
   },
   "lint-staged": {
     "server/{src,test}/**/*.ts": [
-      "eslint --max-warnings=0 --no-warn-ignored",
+      "bash -c 'cd server && ./node_modules/.bin/eslint --max-warnings=0 \"$@\"' --",
       "bash -c 'tsc --noEmit --project server/tsconfig.build.json'"
     ],
     "web/src/**/*.{ts,tsx}": [
-      "eslint --max-warnings=0 --no-warn-ignored",
+      "bash -c 'cd web && ./node_modules/.bin/eslint --max-warnings=0 \"$@\"' --",
       "bash -c 'tsc --noEmit --project web/tsconfig.app.json'"
     ]
   }
