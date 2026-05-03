@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
@@ -54,7 +55,7 @@ export class ProductsService {
 
       await this.productsRepository.insert(product);
       return this.findOne(product.toSnapshot().id);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }
@@ -95,6 +96,16 @@ export class ProductsService {
       throw new NotFoundException(`Product with id "${id}" was not found.`);
     }
 
+    if (
+      !updateProductDto.name &&
+      !updateProductDto.sku &&
+      !updateProductDto.categoryId
+    ) {
+      throw new UnprocessableEntityException(
+        'At least one field must be provided for update.',
+      );
+    }
+
     if (updateProductDto.categoryId) {
       await this.ensureCategoryExists(updateProductDto.categoryId);
     }
@@ -111,7 +122,7 @@ export class ProductsService {
       });
       await this.productsRepository.save(product);
       return this.findOne(id);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }
@@ -128,7 +139,7 @@ export class ProductsService {
       if (!isDeleted) {
         throw new NotFoundException(`Product with id "${id}" was not found.`);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (isForeignKeyViolation(error as { code?: string })) {
         throw new ConflictException(
           'Product has inventory lines and cannot be deleted.',

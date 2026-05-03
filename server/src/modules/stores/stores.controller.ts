@@ -12,11 +12,15 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
@@ -34,6 +38,8 @@ export class StoresController {
   @Post()
   @ApiOperation({ summary: 'Create store' })
   @ApiCreatedResponse({ type: StoreResponseDto })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'Store name already exists' })
   public create(
     @Body() createStoreDto: CreateStoreDto,
   ): Promise<StoreResponseDto> {
@@ -52,6 +58,7 @@ export class StoresController {
   @Get(':id')
   @ApiOperation({ summary: 'Get store by id' })
   @ApiOkResponse({ type: StoreResponseDto })
+  @ApiNotFoundResponse({ description: 'Store not found' })
   public findOne(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<StoreResponseDto> {
@@ -61,6 +68,12 @@ export class StoresController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update store by id' })
   @ApiOkResponse({ type: StoreResponseDto })
+  @ApiNotFoundResponse({ description: 'Store not found' })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'Store name already exists' })
+  @ApiUnprocessableEntityResponse({
+    description: 'No fields provided for update',
+  })
   public update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateStoreDto: UpdateStoreDto,
@@ -72,6 +85,10 @@ export class StoresController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete store by id' })
   @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'Store not found' })
+  @ApiConflictResponse({
+    description: 'Store has inventory lines and cannot be deleted',
+  })
   public async remove(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {

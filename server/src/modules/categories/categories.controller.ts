@@ -11,11 +11,15 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CategoryResponseDto } from './dto/category-response.dto';
@@ -30,6 +34,8 @@ export class CategoriesController {
   @Post()
   @ApiOperation({ summary: 'Create category' })
   @ApiCreatedResponse({ type: CategoryResponseDto })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'Category name already exists' })
   public create(
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<CategoryResponseDto> {
@@ -46,6 +52,7 @@ export class CategoriesController {
   @Get(':id')
   @ApiOperation({ summary: 'Get category by id' })
   @ApiOkResponse({ type: CategoryResponseDto })
+  @ApiNotFoundResponse({ description: 'Category not found' })
   public findOne(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<CategoryResponseDto> {
@@ -55,6 +62,12 @@ export class CategoriesController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update category by id' })
   @ApiOkResponse({ type: CategoryResponseDto })
+  @ApiNotFoundResponse({ description: 'Category not found' })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'Category name already exists' })
+  @ApiUnprocessableEntityResponse({
+    description: 'No fields provided for update',
+  })
   public update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -66,6 +79,10 @@ export class CategoriesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete category by id' })
   @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'Category not found' })
+  @ApiConflictResponse({
+    description: 'Category has products and cannot be deleted',
+  })
   public async remove(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {

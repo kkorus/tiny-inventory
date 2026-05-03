@@ -8,7 +8,11 @@ import {
   Matches,
   MaxLength,
   Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
+import type { ValidationArguments } from 'class-validator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 function toNumberOrUndefined(
@@ -18,6 +22,42 @@ function toNumberOrUndefined(
     return undefined;
   }
   return Number(value);
+}
+
+@ValidatorConstraint({ name: 'MaxPriceGteMinPrice' })
+class MaxPriceGteMinPrice implements ValidatorConstraintInterface {
+  public validate(
+    maxPrice: number | undefined,
+    args: ValidationArguments,
+  ): boolean {
+    const dto = args.object as ListStoreProductsQueryDto;
+    if (dto.minPrice === undefined || maxPrice === undefined) {
+      return true;
+    }
+    return maxPrice >= dto.minPrice;
+  }
+
+  public defaultMessage(): string {
+    return 'maxPrice must be greater than or equal to minPrice';
+  }
+}
+
+@ValidatorConstraint({ name: 'MaxQuantityGteMinQuantity' })
+class MaxQuantityGteMinQuantity implements ValidatorConstraintInterface {
+  public validate(
+    maxQuantity: number | undefined,
+    args: ValidationArguments,
+  ): boolean {
+    const dto = args.object as ListStoreProductsQueryDto;
+    if (dto.minQuantity === undefined || maxQuantity === undefined) {
+      return true;
+    }
+    return maxQuantity >= dto.minQuantity;
+  }
+
+  public defaultMessage(): string {
+    return 'maxQuantity must be greater than or equal to minQuantity';
+  }
 }
 
 export class ListStoreProductsQueryDto extends PaginationQueryDto {
@@ -54,6 +94,7 @@ export class ListStoreProductsQueryDto extends PaginationQueryDto {
   )
   @IsNumber()
   @Min(0)
+  @Validate(MaxPriceGteMinPrice)
   public maxPrice?: number;
 
   @ApiPropertyOptional({ example: 0 })
@@ -72,5 +113,6 @@ export class ListStoreProductsQueryDto extends PaginationQueryDto {
   )
   @IsNumber()
   @Min(0)
+  @Validate(MaxQuantityGteMinQuantity)
   public maxQuantity?: number;
 }

@@ -12,11 +12,15 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
 import { CreateStoreProductDto } from './dto/create-store-product.dto';
@@ -36,6 +40,9 @@ export class StoreProductsController {
   @Post()
   @ApiOperation({ summary: 'Create store inventory line' })
   @ApiCreatedResponse({ type: StoreProductViewDto })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiNotFoundResponse({ description: 'Store or product not found' })
+  @ApiConflictResponse({ description: 'Store-product pair already exists' })
   public create(
     @Body() createStoreProductDto: CreateStoreProductDto,
   ): Promise<StoreProductViewDto> {
@@ -56,6 +63,7 @@ export class StoreProductsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get inventory line by id' })
   @ApiOkResponse({ type: StoreProductViewDto })
+  @ApiNotFoundResponse({ description: 'Inventory line not found' })
   public findOne(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<StoreProductViewDto> {
@@ -65,6 +73,14 @@ export class StoreProductsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update inventory line by id' })
   @ApiOkResponse({ type: StoreProductViewDto })
+  @ApiNotFoundResponse({
+    description: 'Inventory line, store, or product not found',
+  })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'Store-product pair already exists' })
+  @ApiUnprocessableEntityResponse({
+    description: 'No fields provided for update',
+  })
   public update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateStoreProductDto: UpdateStoreProductDto,
@@ -76,6 +92,7 @@ export class StoreProductsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete inventory line by id' })
   @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'Inventory line not found' })
   public async remove(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {

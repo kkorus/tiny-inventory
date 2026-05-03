@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
@@ -44,7 +45,7 @@ export class StoresService {
       });
       await this.storesRepository.insert(store);
       return store.toSnapshot();
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }
@@ -85,6 +86,12 @@ export class StoresService {
       throw new NotFoundException(`Store with id "${id}" was not found.`);
     }
 
+    if (!updateStoreDto.name && !updateStoreDto.address) {
+      throw new UnprocessableEntityException(
+        'At least one field must be provided for update.',
+      );
+    }
+
     try {
       store.update({
         name: updateStoreDto.name
@@ -96,7 +103,7 @@ export class StoresService {
       });
       await this.storesRepository.save(store);
       return store.toSnapshot();
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }
@@ -113,7 +120,7 @@ export class StoresService {
       if (!isDeleted) {
         throw new NotFoundException(`Store with id "${id}" was not found.`);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (isForeignKeyViolation(error as { code?: string })) {
         throw new ConflictException(
           'Store has inventory lines and cannot be deleted.',

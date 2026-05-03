@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PaginatedResponse } from '../common/types/paginated-response.type';
 import { isUniqueViolation } from '../common/utils/is-unique-violation.util';
@@ -56,7 +57,7 @@ export class StoreProductsService {
 
       await this.storeProductRepository.insert(storeProduct);
       return this.findOne(newId);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }
@@ -111,6 +112,18 @@ export class StoreProductsService {
       );
     }
 
+    const { storeId, productId, price, quantity, lowStockThreshold } =
+      updateStoreProductDto;
+    if (
+      [storeId, productId, price, quantity, lowStockThreshold].every(
+        (v) => v === undefined,
+      )
+    ) {
+      throw new UnprocessableEntityException(
+        'At least one field must be provided for update.',
+      );
+    }
+
     if (updateStoreProductDto.storeId) {
       await this.ensureStoreExists(updateStoreProductDto.storeId);
     }
@@ -137,7 +150,7 @@ export class StoreProductsService {
       });
       await this.storeProductRepository.save(current);
       return this.findOne(id);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof DomainValidationError) {
         throw new BadRequestException(error.message);
       }

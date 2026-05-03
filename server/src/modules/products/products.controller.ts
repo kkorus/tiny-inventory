@@ -12,11 +12,15 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -33,6 +37,9 @@ export class ProductsController {
   @Post()
   @ApiOperation({ summary: 'Create catalog product' })
   @ApiCreatedResponse({ type: ProductResponseDto })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiNotFoundResponse({ description: 'Category not found' })
+  @ApiConflictResponse({ description: 'SKU already exists' })
   public create(
     @Body() createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {
@@ -51,6 +58,7 @@ export class ProductsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get catalog product by id' })
   @ApiOkResponse({ type: ProductResponseDto })
+  @ApiNotFoundResponse({ description: 'Product not found' })
   public findOne(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<ProductResponseDto> {
@@ -60,6 +68,12 @@ export class ProductsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update catalog product by id' })
   @ApiOkResponse({ type: ProductResponseDto })
+  @ApiNotFoundResponse({ description: 'Product or category not found' })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiConflictResponse({ description: 'SKU already exists' })
+  @ApiUnprocessableEntityResponse({
+    description: 'No fields provided for update',
+  })
   public update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -71,6 +85,10 @@ export class ProductsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete catalog product by id' })
   @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'Product not found' })
+  @ApiConflictResponse({
+    description: 'Product has inventory lines and cannot be deleted',
+  })
   public async remove(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {
